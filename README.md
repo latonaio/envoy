@@ -7,7 +7,7 @@ AIONは、エッジコンピューティング上のマイクロサービスア�
 `envoyproxy/envoy:v1.16-latest`
 
 ## Envoyの設定ファイル
-[aion-core](https://github.com/latonaio/aion-core)とaion-coreの周辺環境を整備する[aion-core-manifests](aion-core-manifests)で起動するEnvoyの設定を行います。
+[aion-core](https://github.com/latonaio/aion-core)とaion-coreの周辺環境を整備する[aion-core-manifests](https://github.com/latonaio/aion-core-manifests)で起動するEnvoyの設定を行います。
 
 変更が必要なファイルの箇所は以下の通りです。必要に応じて該当箇所を変更してください。
 
@@ -18,87 +18,49 @@ aion-core
 - pkg/k8s/pod.go
 - template/envoy.yaml
 
-aion-core-manifest
-- Makefile
-- generated/default.yml
-- generated/prj.yml
+aion-core-manifests
+- template/bases/service-broker/deployment.yml
 - template/bases/status-kanban/deployment.yml
 - template/bases/kanban-replicator/deployment.yml
 - template/bases/send-anything/deployment.yml
-- template/bases/service-broker/deployment.yml
+- Makefile
 
 ```
 
-例えば、generated/default.ymlには、初期値で下記のように記載されています。   
+例えば、aion-core-manifests/template/bases/service-broker/deployment.ymlには、初期値で下記のように記載されています。   
+
 ```
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    run: aion-sendanything
-  name: aion-sendanything
-  namespace: default
-spec:
-  ports:
-  - name: envoy-grpc
-    nodePort: 30100
-    port: 10000
-    protocol: TCP
-    targetPort: 10000
-  - name: envoy-admin
-    port: 10001
-    protocol: TCP
-    targetPort: 10001
-  selector:
-    run: aion-sendanything
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    run: aion-servicebroker
-  name: aion-servicebroker
-  namespace: default
-spec:
-  ports:
-  - name: envoy-admin
-    port: 10001
-    protocol: TCP
-    targetPort: 10001
-  - name: envoy-grpc
-    nodePort: 31000
-    port: 10000
-    protocol: TCP
-    targetPort: 10000
-  selector:
-    run: aion-servicebroker
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    run: aion-statuskanban
-  name: aion-statuskanban
-  namespace: default
-spec:
-  ports:
-  - name: grpc
-    port: 11010
-    protocol: TCP
-    targetPort: 11010
-  - name: envoy-grpc
-    port: 10000
-    protocol: TCP
-    targetPort: 10000
-  - name: envoy-admin
-    port: 10001
-    protocol: TCP
-    targetPort: 10001
-  selector:
-    run: aion-statuskanban
-  type: ClusterIP
+        - name: envoy
+          image: envoyproxy/envoy:v1.16-latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/usr/local/bin/envoy"
+          args:
+            - "--config-path /etc/envoy/envoy.yaml"
+          resources:
+            limits:
+              cpu: 20m
+              memory: 512Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+          ports:
+            - containerPort: 6379
+              name: envoy-redis
+            - containerPort: 10001
+              name: envoy-admin
+            - containerPort: 10000
+              name: envoy-grpc
+          volumeMounts:
+            - name: envoy
+              mountPath: /etc/envoy
+      volumes:
+        - name: envoy
+          configMap:
+            name: envoy-config-servicebroker
+        - name: config
+          hostPath:
+            path: /var/lib/aion/default/config
 ---
 ```
