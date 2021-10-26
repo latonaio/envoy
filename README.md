@@ -6,6 +6,14 @@ Envoyは、クラウドネイティブアプリケーション向けに設計さ
 AIONは、エッジコンピューティング上のマイクロサービスアーキテクチャにおいて、ロードバランサー、ネットワーク制御プロキシとして、Envoyをaion-coreならびにKubernetes環境上で採用しています。  
 `envoyproxy/envoy:v1.16-latest`
 
+
+## Envoyロードバランサーを用いたエッジコンピューティングアーキテクチャ  
+以下の図は、Envoyロードバランサーを用いたエッジコンピューティングアーキテクチャです。  
+本アーキテクチャにおいて、Envoyは外部の複数のモバイル端末からのネットワーク通信と、エッジ端末内における指定されたサービスとのネットワーク通信の制御仲介を行なっています。  
+
+![envoy](docs/load_balancer_envoy.drawio.png)
+
+
 ## Envoyの設定ファイル
 [aion-core](https://github.com/latonaio/aion-core)とaion-coreの周辺環境を整備する[aion-core-manifests](https://github.com/latonaio/aion-core-manifests)で起動するEnvoyの設定を行います。
 
