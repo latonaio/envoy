@@ -69,6 +69,6 @@ aion-core-manifests
             name: envoy-config-servicebroker
         - name: config
           hostPath:
-            path: /var/lib/aion/default/config
+            path: /var/lib/aion/default/config  
 ---
 ```
